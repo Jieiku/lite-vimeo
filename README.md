@@ -60,6 +60,21 @@ If you want the paste-and-go version, you can simply load it via CDN:
 ></lite-vimeo>
 ```
 
+## Use a Custom Placeholder Image
+
+Provide an image in the named `image` slot to use your own placeholder instead of fetching one from Vimeo. When the slot is populated, `lite-vimeo` skips the Vimeo oEmbed request used to discover the default placeholder.
+
+```html
+<lite-vimeo videoid="364402896">
+  <img
+    slot="image"
+    src="/images/vimeo-364402896.webp"
+    alt="Play: Alex Russell - The Mobile Web: MIA"
+    loading="lazy"
+  >
+</lite-vimeo>
+```
+
 ## Change "Play" for Locale</h3>
 
 ```html

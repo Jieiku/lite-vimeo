@@ -148,8 +148,10 @@ export class LiteVimeoEmbed extends HTMLElement {
           cursor: pointer;
         }
 
-        #fallbackPlaceholder {
+        #fallbackPlaceholder, slot[name=image]::slotted(*) {
           object-fit: cover;
+          width: 100%;
+          height: 100%;
         }
 
         #frame::before {
@@ -209,14 +211,16 @@ export class LiteVimeoEmbed extends HTMLElement {
       </style>
       <div id="frame">
         <picture>
-          <source id="webpPlaceholder" type="image/webp">
-          <source id="jpegPlaceholder" type="image/jpeg">
-          <img id="fallbackPlaceholder"
-               referrerpolicy="origin"
-               width="1100"
-               height="619"
-               decoding="async"
-               loading="lazy">
+          <slot name="image">
+            <source id="webpPlaceholder" type="image/webp">
+            <source id="jpegPlaceholder" type="image/jpeg">
+            <img id="fallbackPlaceholder"
+                 referrerpolicy="origin"
+                 width="1100"
+                 height="619"
+                 decoding="async"
+                 loading="lazy">
+          </slot>
         </picture>
         <button class="lvo-playbtn"></button>
       </div>
@@ -242,7 +246,14 @@ export class LiteVimeoEmbed extends HTMLElement {
    * Parse our attributes and fire up some placeholders
    */
   private setupComponent(): void {
-    this.initImagePlaceholder();
+    // If the named slot is not empty, save the network requests and use the
+    // supplied image instead of fetching Vimeo's oEmbed placeholder.
+    const imageSlot = this.shadowRoot.querySelector<HTMLSlotElement>(
+      'slot[name=image]',
+    )!;
+    if (imageSlot.assignedNodes().length === 0) {
+      this.initImagePlaceholder();
+    }
 
     this.domRefPlayButton.setAttribute(
       'aria-label',

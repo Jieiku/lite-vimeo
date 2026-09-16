@@ -28,9 +28,13 @@
 </p>
  */
 export class LiteVimeoEmbed extends HTMLElement {
+    shadowRoot;
+    iframeLoaded = false;
+    domRefFrame;
+    domRefImg;
+    domRefPlayButton;
     constructor() {
         super();
-        this.iframeLoaded = false;
         this.setupDom();
     }
     static get observedAttributes() {
@@ -120,8 +124,10 @@ export class LiteVimeoEmbed extends HTMLElement {
           cursor: pointer;
         }
 
-        #fallbackPlaceholder {
+        #fallbackPlaceholder, slot[name=image]::slotted(*) {
           object-fit: cover;
+          width: 100%;
+          height: 100%;
         }
 
         #frame::before {
@@ -181,14 +187,16 @@ export class LiteVimeoEmbed extends HTMLElement {
       </style>
       <div id="frame">
         <picture>
-          <source id="webpPlaceholder" type="image/webp">
-          <source id="jpegPlaceholder" type="image/jpeg">
-          <img id="fallbackPlaceholder"
-               referrerpolicy="origin"
-               width="1100"
-               height="619"
-               decoding="async"
-               loading="lazy">
+          <slot name="image">
+            <source id="webpPlaceholder" type="image/webp">
+            <source id="jpegPlaceholder" type="image/jpeg">
+            <img id="fallbackPlaceholder"
+                 referrerpolicy="origin"
+                 width="1100"
+                 height="619"
+                 decoding="async"
+                 loading="lazy">
+          </slot>
         </picture>
         <button class="lvo-playbtn"></button>
       </div>
@@ -205,7 +213,12 @@ export class LiteVimeoEmbed extends HTMLElement {
      * Parse our attributes and fire up some placeholders
      */
     setupComponent() {
-        this.initImagePlaceholder();
+        // If the named slot is not empty, save the network requests and use the
+        // supplied image instead of fetching Vimeo's oEmbed placeholder.
+        const imageSlot = this.shadowRoot.querySelector('slot[name=image]');
+        if (imageSlot.assignedNodes().length === 0) {
+            this.initImagePlaceholder();
+        }
         this.domRefPlayButton.setAttribute('aria-label', `${this.videoPlay}: ${this.videoTitle}`);
         this.setAttribute('title', `${this.videoPlay}: ${this.videoTitle}`);
         if (this.autoLoad) {
@@ -317,6 +330,7 @@ export class LiteVimeoEmbed extends HTMLElement {
             observer.observe(this);
         }
     }
+    static preconnected = false;
     /**
      * Add a <link rel={preload | preconnect} ...> to the head
      * @param {*} kind
@@ -355,7 +369,6 @@ export class LiteVimeoEmbed extends HTMLElement {
         LiteVimeoEmbed.preconnected = true;
     }
 }
-LiteVimeoEmbed.preconnected = false;
 // Register custom element
 customElements.define('lite-vimeo', LiteVimeoEmbed);
 //# sourceMappingURL=lite-vimeo.js.map
